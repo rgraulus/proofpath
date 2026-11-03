@@ -75,3 +75,25 @@ export type {
   ConcordiumX402ProfileInput,
   ConcordiumX402ProfileRecord
 } from "./profiles/concordium-x402.js";
+
+//
+// ProofPath PP-02 — Deterministic trust and binding evaluators.
+//
+// These APIs assess evidence and policy consistency only.
+// They do not independently authenticate blockchain state,
+// identity presentations, endpoint control, settlement or delivery.
+//
+
+export type * from "./pp02/types.js";
+
+export {
+  evaluateRegistryTrust
+} from "./pp02/registryTrust.js";
+
+export {
+  evaluateOwnerAssurance
+} from "./pp02/ownerAssurance.js";
+
+export {
+  evaluateSellerBinding
+} from "./pp02/sellerBinding.js";
