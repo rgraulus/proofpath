@@ -1,0 +1,480 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofpath.dev/schemas/proofpath-evidence-v1.schema.json",
+  "title": "ProofPath Transaction Evidence Manifest v1",
+  "description": "Structural evidence contract; validity does not imply verified claims.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "transaction",
+    "participants",
+    "commercialTerms",
+    "authorization",
+    "payment",
+    "delivery",
+    "evidence",
+    "audit",
+    "assurance",
+    "governance"
+  ],
+  "properties": {
+    "schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "proofpath.transaction-evidence"
+        },
+        "version": {
+          "const": "1.0.0"
+        },
+        "profile": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "type",
+        "version",
+        "profile"
+      ]
+    },
+    "transaction": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "correlationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "recordedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "enum": [
+            "attempted",
+            "pending",
+            "failed",
+            "evidence_collected",
+            "disputed"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "correlationId",
+        "recordedAt",
+        "status"
+      ]
+    },
+    "participants": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "buyer": {
+          "$ref": "#/$defs/participant"
+        },
+        "seller": {
+          "$ref": "#/$defs/participant"
+        }
+      },
+      "required": [
+        "buyer",
+        "seller"
+      ]
+    },
+    "commercialTerms": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "type": "string",
+          "minLength": 1
+        },
+        "resource": {
+          "type": "string",
+          "minLength": 1
+        },
+        "amountAtomic": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$"
+        },
+        "asset": {
+          "type": "string",
+          "minLength": 1
+        },
+        "recipient": {
+          "type": "string",
+          "minLength": 1
+        },
+        "termsEvidenceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "termsDigestSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": []
+    },
+    "authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "evidenceIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "evidenceIds"
+      ]
+    },
+    "payment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "evidenceIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "evidenceIds"
+      ]
+    },
+    "delivery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "evidenceIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "evidenceIds"
+      ]
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/artifact"
+      }
+    },
+    "audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "eventIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "headDigestSha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "completeness": {
+          "enum": [
+            "complete_for_declared_scope",
+            "partial",
+            "unknown"
+          ]
+        },
+        "coverageScope": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "eventIds",
+        "headDigestSha256",
+        "completeness",
+        "coverageScope"
+      ]
+    },
+    "assurance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "claims": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/claim"
+          }
+        }
+      },
+      "required": [
+        "claims"
+      ]
+    },
+    "governance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "disclosureProfile": {
+          "enum": [
+            "public",
+            "restricted"
+          ]
+        },
+        "retentionPolicyRef": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "retentionResponsibleParty": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "retentionUntil": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "auditProfile": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "disclosureProfile",
+        "retentionPolicyRef",
+        "retentionResponsibleParty",
+        "retentionUntil",
+        "auditProfile"
+      ]
+    }
+  },
+  "$defs": {
+    "participant": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "agentRef": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ownerRef": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "identityEvidenceIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "agentRef",
+        "ownerRef",
+        "identityEvidenceIds"
+      ]
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mediaType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "digestSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "disclosure": {
+          "enum": [
+            "public",
+            "restricted"
+          ]
+        },
+        "availability": {
+          "enum": [
+            "included",
+            "referenced",
+            "unavailable"
+          ]
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "type": "string",
+              "minLength": 1
+            },
+            "producerRef": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "collectorRef": {
+              "type": "string",
+              "minLength": 1
+            },
+            "collectionMethod": {
+              "type": "string",
+              "minLength": 1
+            },
+            "observedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "collectedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "historicalContext": {
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "producerRef",
+            "collectorRef",
+            "collectionMethod",
+            "observedAt",
+            "collectedAt",
+            "historicalContext"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "mediaType",
+        "digestSha256",
+        "disclosure",
+        "availability",
+        "source"
+      ]
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subjectRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "not_evaluated",
+            "verified",
+            "failed",
+            "indeterminate",
+            "not_applicable"
+          ]
+        },
+        "evidenceIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "verifierRef": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evaluatedAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reasonCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "subjectRef",
+        "status",
+        "evidenceIds",
+        "verifierRef",
+        "evaluatedAt",
+        "reasonCode"
+      ]
+    }
+  }
+}

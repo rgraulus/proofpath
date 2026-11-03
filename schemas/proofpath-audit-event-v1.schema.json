@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofpath.dev/schemas/proofpath-audit-event-v1.schema.json",
+  "title": "ProofPath Audit Event v1",
+  "description": "Transaction-level audit event. Structural validity does not establish source authenticity or event truth.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "proofpath.audit-event"
+        },
+        "version": {
+          "const": "1.0.0"
+        }
+      },
+      "required": [
+        "type",
+        "version"
+      ]
+    },
+    "eventId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "transactionId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "correlationId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "eventType": {
+      "enum": [
+        "agent_action_requested",
+        "agent_action_completed",
+        "agent_action_failed",
+        "agent_identity_observed",
+        "identity_verification_failed",
+        "delegation_evaluated",
+        "authorization_denied",
+        "policy_evaluated",
+        "conditional_gate_denied",
+        "terms_presented",
+        "terms_accepted",
+        "payment_challenged",
+        "payment_submitted",
+        "payment_finalized",
+        "payment_failed",
+        "delivery_attested",
+        "delivery_disputed",
+        "evidence_collected",
+        "evidence_unavailable",
+        "integrity_check_failed",
+        "claim_verified",
+        "claim_failed",
+        "claim_indeterminate",
+        "oversight_action_recorded",
+        "audit_export_created",
+        "retention_action_recorded"
+      ]
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sourceType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "producerRef": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "collectorRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authenticationEvidenceIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "sourceType",
+        "producerRef",
+        "collectorRef",
+        "authenticationEvidenceIds"
+      ]
+    },
+    "sourceEventAt": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "observedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "outcome": {
+      "enum": [
+        "succeeded",
+        "failed",
+        "denied",
+        "pending",
+        "unknown",
+        "not_applicable"
+      ]
+    },
+    "payloadVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "payload": {
+      "type": "object",
+      "description": "Profile-specific event facts; never automatically treated as authenticated or verified."
+    },
+    "evidenceIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "previousDigestSha256": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "eventDigestSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "externalAnchorRefs": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "eventId",
+    "transactionId",
+    "correlationId",
+    "eventType",
+    "sequence",
+    "source",
+    "sourceEventAt",
+    "observedAt",
+    "outcome",
+    "payloadVersion",
+    "payload",
+    "evidenceIds",
+    "previousDigestSha256",
+    "eventDigestSha256",
+    "externalAnchorRefs"
+  ]
+}

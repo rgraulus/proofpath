@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+
+# Build and test output
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Temporary work and generated evidence
+.tmp/
+tmp/
+temp/
+generated/
+artifacts/
+evidence-output/
+
+# Logs and process artifacts
+*.log
+logs/
+*.pid
+*.pid.lock
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jwk
+*.jwk.json
+*.seed
+
+# Local backups and patch residue
+*.bak
+*.backup
+*.orig
+*.rej
+*~
+
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
