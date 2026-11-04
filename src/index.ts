@@ -139,3 +139,25 @@ export {
   digestFacilitatorReceiptPolicy,
   verifyFacilitatorReceipt
 } from "./verification/facilitatorReceipt.js";
+
+//
+// ProofPath PP-03 M3.3 — Trusted-node settlement verification.
+//
+// Verifies a finalized, successful PLT transfer observation
+// against independently authorized policy and payment terms.
+// It does not independently verify Concordium consensus.
+//
+
+export {
+  digestSettlementPolicy,
+  verifySettlementFinality
+} from "./verification/settlementFinality.js";
+
+export {
+  ConcordiumSettlementTransport,
+  createConcordiumSettlementTransport
+} from "./adapters/concordium/settlementFinality.js";
+
+export type {
+  ConcordiumSettlementTransportOptions
+} from "./adapters/concordium/settlementFinality.js";
