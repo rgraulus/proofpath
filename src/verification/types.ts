@@ -163,3 +163,115 @@ export interface RegistryVerificationResult {
 
   historicalUpgradeAuthorityVerified: false;
 }
+
+/**
+ * ProofPath PP-03 M3.2
+ * Independent Facilitator Receipt Verification Contracts.
+ *
+ * Assurance: trusted_facilitator_receipt_signature_v1.
+ * Authenticated signature and payment binding only.
+ * Independent settlement finality remains unverified.
+ */
+
+export type FacilitatorReceiptVerificationStatus =
+  | "verified"
+  | "failed"
+  | "indeterminate";
+
+export type FacilitatorReceiptAssuranceModel =
+  "trusted_facilitator_receipt_signature_v1";
+
+export type FacilitatorReceiptClaim =
+  "facilitator_receipt_signature_and_binding";
+
+/**
+ * Independently authorized Ed25519 public signing key.
+ * JWS kid selects a key; it does not authorize that key.
+ */
+export interface AuthorizedFacilitatorSigningKey {
+  kid: string;
+  kty: "OKP";
+  crv: "Ed25519";
+  x: string;
+  alg: "EdDSA";
+  use: "sig";
+}
+
+/**
+ * Policy approval must be established independently.
+ * A matching caller-generated digest is not authority.
+ */
+export interface TrustedFacilitatorReceiptPolicy {
+  policyId: string;
+  policyVersion: string;
+  facilitatorId: string;
+  authorizedKeys: AuthorizedFacilitatorSigningKey[];
+  acceptedProofVersions: Array<"ccd-plt-proof@v1">;
+  maxReceiptAgeSeconds: number;
+  maxFutureSkewSeconds: number;
+}
+
+/**
+ * Expected immutable payment contract.
+ * Must not be derived from the presented receipt.
+ */
+export interface FacilitatorExpectedPaymentContract {
+  contractId: string;
+  contractVersion: string;
+  isFrozen: true;
+  merchantId: string;
+  resource: {
+    method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+    path: string;
+  };
+  chain_id?: string;
+  network: string;
+  asset: {
+    type: "PLT";
+    tokenId: string;
+    decimals: number;
+  };
+  amount: string;
+  payTo: string;
+}
+
+/**
+ * Independently established transaction-specific binding.
+ * The expected hash must not be copied from the receipt.
+ */
+export interface FacilitatorExpectedPayment {
+  nonce: string;
+  contract: FacilitatorExpectedPaymentContract;
+  transactionHash: string;
+}
+
+/**
+ * Trusted application-composed verification context.
+ * Policy digest and expected payment require external authority.
+ * The clock is injectable for deterministic testing.
+ */
+export interface FacilitatorReceiptVerificationContext {
+  jws: string;
+  expected: FacilitatorExpectedPayment;
+  policy: TrustedFacilitatorReceiptPolicy;
+  trustedPolicyDigest: string;
+  now: () => Date;
+}
+
+/**
+ * A verified result establishes only signature authenticity
+ * and expected payment binding under approved key policy.
+ */
+export interface FacilitatorReceiptVerificationResult {
+  claim: FacilitatorReceiptClaim;
+  assuranceModel: FacilitatorReceiptAssuranceModel;
+  status: FacilitatorReceiptVerificationStatus;
+  reasonCode: string;
+  policyId: string;
+  policyDigest: string;
+  facilitatorId: string;
+  signingKeyId: string | null;
+  transactionHash: string | null;
+  signatureAuthenticated: boolean;
+  settlementIndependentlyVerified: false;
+}
