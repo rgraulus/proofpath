@@ -275,3 +275,166 @@ export interface FacilitatorReceiptVerificationResult {
   signatureAuthenticated: boolean;
   settlementIndependentlyVerified: false;
 }
+
+/**
+ * ProofPath PP-03 M3.3
+ * Trusted-Node Settlement and Finality Verification.
+ *
+ * Assurance: trusted_node_finalized_plt_transfer_v1.
+ *
+ * A verified result means an authenticated, policy-approved
+ * Concordium node reports a finalized, successful transaction
+ * containing the expected PLT transfer.
+ *
+ * This is independent of a Facilitator receipt, but is not
+ * independent verification of Concordium consensus.
+ */
+
+export type SettlementVerificationStatus =
+  | "verified"
+  | "failed"
+  | "indeterminate";
+
+export type SettlementAssuranceModel =
+  "trusted_node_finalized_plt_transfer_v1";
+
+export type SettlementClaim =
+  "finalized_plt_transfer_matches_expected_payment";
+
+/**
+ * Approval of this policy must originate outside the transaction
+ * presenter and independently of the node's returned evidence.
+ */
+export interface TrustedSettlementPolicy {
+  policyId: string;
+  policyVersion: string;
+  network: "concordium:testnet" | "concordium:mainnet";
+  expectedGenesisHash: string;
+  trustedNodeEndpoint: string;
+  maxObservationAgeSeconds: number;
+  maxFutureSkewSeconds: number;
+  requireFinalizedBlock: true;
+}
+
+/**
+ * Expected payment facts must come from trusted application state,
+ * not from the Facilitator receipt or the node observation.
+ *
+ * amountRaw is an unsigned base-10 integer string.
+ * No JavaScript floating-point amount comparison is permitted.
+ */
+export interface ExpectedSettlementPayment {
+  network: "concordium:testnet" | "concordium:mainnet";
+  transactionHash: string;
+  tokenId: string;
+  decimals: number;
+  amountRaw: string;
+  payTo: string;
+  from?: string;
+}
+
+/**
+ * Normalized protocol-level PLT transfer event.
+ *
+ * Null fields indicate an unknown or undecodable value.
+ * Such events must never independently establish a match.
+ */
+export interface ObservedPltTransfer {
+  tokenId: string | null;
+  from: string | null;
+  to: string | null;
+  decimals: number | null;
+  amountRaw: string | null;
+}
+
+/**
+ * Trusted-node-reported transaction observation.
+ *
+ * A finalized status is distinct from successful execution.
+ * Complete, unambiguous execution evidence is necessary for
+ * a positive result.
+ *
+ * A mock transport can fabricate this entire structure.
+ * Production assurance requires independently trusted
+ * application composition and authenticated node transport.
+ */
+export interface SettlementObservation {
+  network: string;
+  genesisHash: string;
+  nodeEndpoint: string;
+  transactionHash: string;
+
+  transactionStatus: "received" | "committed" | "finalized";
+  executionStatus: "success" | "rejected" | "unknown";
+
+  blockHash: string | null;
+  blockHeight: string | null;
+  blockTimestamp: string | null;
+  blockFinalized: boolean | null;
+
+  observedAt: string;
+
+  /**
+   * True only when the transaction execution summary and
+   * its complete event set were successfully interpreted.
+   */
+  executionEvidenceComplete: boolean;
+
+  transfers: ObservedPltTransfer[];
+}
+
+/**
+ * Platform-neutral, read-only settlement observation boundary.
+ *
+ * The transport implementation must validate that the returned
+ * transaction belongs to the requested hash and finalized block.
+ */
+export interface SettlementTransport {
+  readSettlement(
+    expected: ExpectedSettlementPayment
+  ): Promise<SettlementObservation>;
+}
+
+/**
+ * Constructed by a trusted application.
+ *
+ * A caller-calculated digest alone is not policy approval.
+ * The trustedPolicyDigest must be separately anchored.
+ */
+export interface SettlementVerificationContext {
+  policy: TrustedSettlementPolicy;
+  trustedPolicyDigest: string;
+  expected: ExpectedSettlementPayment;
+  transport: SettlementTransport;
+  now: () => Date;
+}
+
+/**
+ * Narrow M3.3 assurance result.
+ *
+ * This result is not a combined M3.2 + M3.3 receipt assessment.
+ * It makes no claims about buyer identity, seller authority,
+ * delivery, receipt authenticity or consensus verification.
+ */
+export interface SettlementVerificationResult {
+  claim: SettlementClaim;
+  assuranceModel: SettlementAssuranceModel;
+
+  status: SettlementVerificationStatus;
+  reasonCode: string;
+
+  policyId: string;
+  policyDigest: string;
+
+  network: string;
+  transactionHash: string;
+
+  blockHash: string | null;
+  blockHeight: string | null;
+
+  transactionFinalized: boolean;
+  transactionExecutionSucceeded: boolean;
+  expectedPltTransferMatched: boolean;
+
+  consensusIndependentlyVerified: false;
+}
