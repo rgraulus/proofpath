@@ -97,3 +97,32 @@ export {
 export {
   evaluateSellerBinding
 } from "./pp02/sellerBinding.js";
+//
+// ProofPath PP-03 M3.1 — Trusted-node Registry snapshot verification.
+//
+// This API verifies a narrowly scoped finalized Registry
+// module observation against an independently anchored policy.
+//
+// A positive result requires trusted application composition.
+// Neither injected transports nor caller-calculated policy
+// digests independently establish live trust.
+//
+// This is not historical upgrade-authority verification,
+// independent consensus verification, or global TRUST-01 approval.
+//
+
+export type * from "./verification/types.js";
+
+export {
+  digestRegistryPolicy,
+  verifyRegistrySnapshot
+} from "./verification/registrySnapshot.js";
+
+export {
+  ConcordiumRegistrySnapshotTransport,
+  createConcordiumRegistrySnapshotTransport
+} from "./adapters/concordium/registrySnapshot.js";
+
+export type {
+  ConcordiumRegistryTransportOptions
+} from "./adapters/concordium/registrySnapshot.js";
