@@ -126,3 +126,16 @@ export {
 export type {
   ConcordiumRegistryTransportOptions
 } from "./adapters/concordium/registrySnapshot.js";
+
+//
+// ProofPath PP-03 M3.2 — Independent Facilitator receipt verification.
+//
+// Authenticates an approved Facilitator JWS signature and
+// its expected payment binding. This does not independently
+// verify settlement finality, Registry provenance or identity.
+//
+
+export {
+  digestFacilitatorReceiptPolicy,
+  verifyFacilitatorReceipt
+} from "./verification/facilitatorReceipt.js";
