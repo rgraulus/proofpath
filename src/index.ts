@@ -161,3 +161,28 @@ export {
 export type {
   ConcordiumSettlementTransportOptions
 } from "./adapters/concordium/settlementFinality.js";
+
+//
+// ProofPath PP-03 M3.4 -- Trusted-node agent/key binding.
+//
+// Verifies CIS-8004 agent ownership and referenced CIS-8 key
+// registration at one finalized block under an independently
+// anchored policy and authenticated trusted-node assumptions.
+//
+// This does not establish human identity, historical upgrade
+// authority, independent consensus, or action-specific signing.
+//
+
+export {
+  digestAgentAuthorityPolicy,
+  verifyAgentAuthority
+} from "./verification/agentAuthority.js";
+
+export {
+  ConcordiumAgentAuthorityTransport,
+  createConcordiumAgentAuthorityTransport
+} from "./adapters/concordium/agentAuthority.js";
+
+export type {
+  ConcordiumAgentAuthorityTransportOptions
+} from "./adapters/concordium/agentAuthority.js";
