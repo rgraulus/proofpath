@@ -438,3 +438,191 @@ export interface SettlementVerificationResult {
 
   consensusIndependentlyVerified: false;
 }
+
+/**
+ * ProofPath PP-03 M3.4 — Registry Agent/Key Authority.
+ *
+ * Assurance: trusted_node_finalized_agent_key_binding_v1.
+ *
+ * Positive results are conditional on independently approved
+ * Registry policies and authenticated trusted-node composition.
+ * They do not establish human identity, historical upgrade
+ * authority, independent consensus, or action-specific signing.
+ */
+
+export type AgentAuthorityVerificationStatus =
+  | "verified"
+  | "failed"
+  | "indeterminate";
+
+export type AgentAuthorityAssuranceModel =
+  "trusted_node_finalized_agent_key_binding_v1";
+
+export type AgentAuthorityClaim =
+  "agent_registry_owner_external_key_binding_at_finalized_snapshot";
+
+export interface AgentAuthorityRegistryCoordinate {
+  network: "concordium:testnet" | "concordium:mainnet";
+  contractIndex: string;
+  contractSubindex: string;
+}
+
+export interface AgentAuthorityExternalKey {
+  namespace: string;
+  keyType: string;
+  publicKeyHex: string;
+}
+
+/**
+ * Requires independent authority approval for BOTH contracts
+ * and BOTH module-reference allowlists.
+ *
+ * An observation cannot approve its own source module.
+ */
+export interface TrustedAgentAuthorityPolicy {
+  policyId: string;
+  policyVersion: string;
+
+  network: "concordium:testnet" | "concordium:mainnet";
+  expectedGenesisHash: string;
+
+  agentRegistry: AgentAuthorityRegistryCoordinate;
+  approvedAgentModuleReferences: string[];
+
+  externalKeyRegistry: AgentAuthorityRegistryCoordinate;
+  approvedExternalKeyModuleReferences: string[];
+
+  trustedNodeEndpoint: string;
+
+  allowedExternalKeyNamespaces: string[];
+  allowedExternalKeyTypes: string[];
+
+  maxSnapshotAgeSeconds: number;
+  maxFutureSkewSeconds: number;
+
+  requireFinalizedBlock: true;
+  requireSameBlock: true;
+}
+
+/**
+ * Expected values must originate from trusted application
+ * state, independently of the observed Registry records.
+ *
+ * The token ID is the canonical, schema-rendered CIS-8004
+ * TokenIdU64 hexadecimal representation.
+ */
+export interface ExpectedAgentAuthority {
+  network: "concordium:testnet" | "concordium:mainnet";
+  agentTokenIdHex: string;
+  expectedOwnerAccount: string;
+  expectedExternalKey: AgentAuthorityExternalKey;
+}
+
+export interface ObservedAgentAuthorityRecord {
+  agentTokenIdHex: string;
+  ownerAccount: string;
+
+  status: "active" | "revoked" | "unknown";
+
+  externalReference: {
+    contract: AgentAuthorityRegistryCoordinate;
+    kind: "cis8";
+    externalKey: AgentAuthorityExternalKey;
+  } | null;
+
+  agentUri: string | null;
+  metadataHash: string | null;
+}
+
+export interface ObservedExternalKeyRegistration {
+  ownerAccount: string;
+  externalKey: AgentAuthorityExternalKey;
+
+  status: "active" | "revoked" | "unknown";
+
+  proofScheme: string;
+  lastUpdated: string;
+}
+
+/**
+ * Both contract reads must refer to the same finalized block.
+ * Read completeness is distinct from record presence.
+ */
+export interface AgentAuthorityObservation {
+  network: string;
+  genesisHash: string;
+  nodeEndpoint: string;
+
+  blockHash: string;
+  blockHeight: string;
+  blockTimestamp: string;
+  observedAt: string;
+  blockFinalized: boolean;
+
+  agentRegistry: AgentAuthorityRegistryCoordinate;
+  agentModuleReference: string;
+  agentReadBlockHash: string;
+  agentReadComplete: boolean;
+  agent: ObservedAgentAuthorityRecord | null;
+
+  externalKeyRegistry: AgentAuthorityRegistryCoordinate;
+  externalKeyModuleReference: string;
+  externalKeyReadBlockHash: string;
+  externalKeyReadComplete: boolean;
+  externalKeyRegistration:
+    ObservedExternalKeyRegistration | null;
+}
+
+/**
+ * Mock transports enable deterministic tests but do not
+ * authenticate node evidence or establish policy authority.
+ */
+export interface AgentAuthorityTransport {
+  readAgentAuthority(
+    expected: ExpectedAgentAuthority
+  ): Promise<AgentAuthorityObservation>;
+}
+
+export interface AgentAuthorityVerificationContext {
+  policy: TrustedAgentAuthorityPolicy;
+  trustedPolicyDigest: string;
+
+  expected: ExpectedAgentAuthority;
+
+  transport: AgentAuthorityTransport;
+  now: () => Date;
+}
+
+/**
+ * Flags describe checks under the declared trust assumptions.
+ * They are not independent proofs of policy authority.
+ */
+export interface AgentAuthorityVerificationResult {
+  claim: AgentAuthorityClaim;
+  assuranceModel: AgentAuthorityAssuranceModel;
+
+  status: AgentAuthorityVerificationStatus;
+  reasonCode: string;
+
+  policyId: string;
+  policyDigest: string;
+
+  network: string;
+  agentTokenIdHex: string;
+
+  blockHash: string | null;
+  blockHeight: string | null;
+
+  registryModulesApprovedByPolicy: boolean;
+  snapshotFinalized: boolean;
+  agentActive: boolean;
+  ownerMatched: boolean;
+  externalReferenceMatched: boolean;
+  externalKeyRegistrationActive: boolean;
+  externalKeyOwnerMatched: boolean;
+
+  consensusIndependentlyVerified: false;
+  historicalUpgradeAuthorityVerified: false;
+  humanIdentityVerified: false;
+  actionSpecificSigningAuthorityVerified: false;
+}
