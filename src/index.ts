@@ -186,3 +186,9 @@ export {
 export type {
   ConcordiumAgentAuthorityTransportOptions
 } from "./adapters/concordium/agentAuthority.js";
+
+// ProofPath PP-03 M3.5 — Offline Evidence Composition.
+// Structural validity does not authenticate evidence sources.
+
+export type * from "./composition/types.js";
+export { composeTransactionEvidence } from "./composition/transactionEvidence.js";
