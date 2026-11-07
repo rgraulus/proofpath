@@ -1,0 +1,144 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>ProofPath | Offline Evidence Demonstration</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">ProofPath<span class="brand-dot">.</span></div>
+      <span class="mode">OFFLINE · SYNTHETIC FIXTURE</span>
+    </header>
+
+    <section class="intro">
+      <p class="eyebrow">PP-04-B · CONCORDIUM × X402</p>
+      <h1>Evidence tells a story.<br>
+        <span>Assurance has boundaries.</span>
+      </h1>
+      <p class="subtitle">
+        Explore how ProofPath verifies narrow payment and
+        agent claims, composes evidence, and rejects
+        contradictory or unsupported assertions.
+      </p>
+    </section>
+
+    <section aria-labelledby="scenarios-heading">
+      <div class="section-heading">
+        <h2 id="scenarios-heading">Choose a scenario</h2>
+        <p>All scenarios run locally against synthetic evidence.</p>
+      </div>
+
+      <div id="scenarios" class="scenario-grid">
+        <button class="scenario active" type="button"
+                data-scenario="consistent"
+                aria-pressed="true">
+          <span class="scenario-number">F01</span>
+          <strong>Consistent evidence</strong>
+          <span>Correct bindings, incomplete assurance.</span>
+        </button>
+
+        <button class="scenario" type="button"
+                data-scenario="missing-evidence"
+                aria-pressed="false">
+          <span class="scenario-number">F02</span>
+          <strong>Missing evidence</strong>
+          <span>Settlement result omitted at composition.</span>
+        </button>
+
+        <button class="scenario" type="button"
+                data-scenario="binding-conflict"
+                aria-pressed="false">
+          <span class="scenario-number">F03</span>
+          <strong>Binding conflict</strong>
+          <span>Deliberately conflicting transaction hash.</span>
+        </button>
+
+        <button class="scenario" type="button"
+                data-scenario="unsupported-assurance"
+                aria-pressed="false">
+          <span class="scenario-number">F04</span>
+          <strong>Unsupported assurance</strong>
+          <span>Deliberate seller-status promotion attempt.</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="results" aria-labelledby="result-heading">
+      <div class="result-header">
+        <div>
+          <p class="eyebrow">COMPOSITION RESULT</p>
+          <h2 id="result-heading">Evidence assessment</h2>
+        </div>
+        <span id="composition-status" class="status">
+          Not evaluated
+        </span>
+      </div>
+
+      <p id="run-status" class="run-status" role="status"
+         aria-live="polite">
+        Loading fixture assessment…
+      </p>
+
+      <div id="adversarial-notice" class="notice" hidden>
+        <strong>Adversarial demonstration</strong>
+        <p>
+          This scenario deliberately changes a composition
+          input after verifier execution. The original verifier
+          assessment is preserved.
+        </p>
+      </div>
+
+      <h3>Original source assessments</h3>
+      <div class="assessment-grid">
+        <div class="assessment">
+          <span>Facilitator receipt · M3.2</span>
+          <strong id="receipt-status">—</strong>
+        </div>
+        <div class="assessment">
+          <span>Settlement finality · M3.3</span>
+          <strong id="settlement-status">—</strong>
+        </div>
+        <div class="assessment">
+          <span>Agent authority · M3.4</span>
+          <strong id="agent-status">—</strong>
+        </div>
+        <div class="assessment">
+          <span>Seller binding · PP-02</span>
+          <strong id="seller-status">—</strong>
+        </div>
+      </div>
+
+      <div class="details">
+        <div>
+          <h3>Evidence manifest</h3>
+          <p id="manifest-status">Not evaluated</p>
+        </div>
+        <div>
+          <h3>Diagnostic reasons</h3>
+          <ul id="diagnostics">
+            <li>Awaiting assessment.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <strong>ProofPath · Evidence is not blanket verification.</strong>
+      <p>
+        Synthetic, offline demonstration only. Verified source
+        assessments reflect simulated trust assumptions, not
+        real transaction, consensus, human-identity, seller
+        endpoint or delivery authentication.
+      </p>
+      <p>No payment or live Testnet operation is performed.</p>
+    </footer>
+  </main>
+</body>
+</html>

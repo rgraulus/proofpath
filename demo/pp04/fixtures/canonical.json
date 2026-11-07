@@ -1,0 +1,81 @@
+{
+  "fixtureId": "pp04-canonical-synthetic-v1",
+  "fixtureKind": "synthetic_offline_evidence",
+  "description": "Deterministic Concordium x402 evidence demonstration. No live blockchain, payment, or identity operations.",
+  "evaluationTime": "2026-11-05T10:00:00.000Z",
+  "transaction": {
+    "id": "pp04-synthetic-transaction-001",
+    "correlationId": "pp04-synthetic-correlation-001",
+    "network": "concordium:testnet",
+    "transactionHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "resource": {
+      "method": "GET",
+      "path": "/paid-gated",
+      "endpoint": "https://seller.example.test/paid-gated"
+    }
+  },
+  "payment": {
+    "settlementProfile": "xcf_crp_plt_v1",
+    "proofVersion": "ccd-plt-proof@v1",
+    "nonce": "pp04-synthetic-challenge-001",
+    "contractId": "pp04-synthetic-contract",
+    "contractVersion": "1",
+    "merchantId": "demo-merchant",
+    "chainId": "ccd:4221332d34e1694168c2a0c0b3fd0f27",
+    "tokenId": "EUDemo",
+    "decimals": 6,
+    "amount": "0.050101",
+    "amountRaw": "50101",
+    "payerSeed": 5,
+    "recipientSeed": 4
+  },
+  "agent": {
+    "participantRole": "buyer",
+    "buyerAgentRef": "pp04-synthetic-buyer-agent",
+    "sellerAgentRef": "pp04-synthetic-seller-agent",
+    "agentTokenIdHex": "0100000000000000",
+    "ownerSeed": 1,
+    "keyNamespace": "xcf:phase5",
+    "keyType": "ed25519",
+    "publicKeyHex": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "registry": {
+    "genesisHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "agentRegistryContractIndex": "12802",
+    "externalKeyRegistryContractIndex": "12801",
+    "contractSubindex": "0",
+    "agentModuleReference": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "externalKeyModuleReference": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "blockHash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "blockHeight": "50360000",
+    "blockTimestamp": "2026-11-05T09:59:20.000Z",
+    "observedAt": "2026-11-05T09:59:40.000Z",
+    "nodeEndpoint": "https://synthetic-node.example:20000/"
+  },
+  "settlement": {
+    "blockHash": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "blockHeight": "123456",
+    "blockTimestamp": "2026-11-05T09:59:20.000Z",
+    "observedAt": "2026-11-05T09:59:40.000Z",
+    "transactionStatus": "finalized",
+    "executionStatus": "success",
+    "executionEvidenceComplete": true
+  },
+  "facilitator": {
+    "facilitatorId": "pp04-synthetic-facilitator",
+    "keyId": "pp04-synthetic-ed25519-key",
+    "testSeedByte": 17,
+    "receiptSettledOffsetSeconds": -30,
+    "receiptExpiryOffsetSeconds": 120
+  },
+  "seller": {
+    "merchantRef": "demo-merchant",
+    "reportedDeliveryStatus": "delivered"
+  },
+  "manifest": {
+    "disclosureProfile": "restricted",
+    "auditCompleteness": "unknown",
+    "auditCoverageScope": "pp04-synthetic-demonstration",
+    "auditProfile": "pp04-fixture-v1"
+  }
+}
