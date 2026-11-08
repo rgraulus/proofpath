@@ -28,7 +28,7 @@ ProofPath has progressed through four implementation stages:
 | PP-01 | Portable evidence and audit foundations | Implemented and validated |
 | PP-02 | Identity, trust and seller-binding assessment | Implemented and validated |
 | PP-03 | Specialized verification and evidence composition | Implemented and validated |
-| PP-04-B | Integrated application, CLI, browser demo and portable exports | Implemented; final PR preparation in progress |
+| PP-04-B | Integrated application, CLI, browser demo and portable exports | Implemented and merged (PR #8); offline synthetic demo validated |
 | PP-04-C | Live/Testnet application integration | Not implemented in PP-04-B |
 
 The integrated PP-04-B demonstration uses deterministic synthetic fixtures and exercises existing ProofPath verification and composition logic.
@@ -75,6 +75,67 @@ An Agent Registry entry does not establish human identity or unrestricted author
 A recorded delivery event does not necessarily authenticate the delivery source.
 
 ProofPath provides a structured evidence layer that preserves these distinctions.
+
+ProofPath is designed as **independent evidence and accountability infrastructure**: a platform-neutral layer that helps applications preserve and assess what their transaction evidence can—and cannot—establish. This architecture also supports selected regulatory oversight and recordkeeping processes without positioning ProofPath as a compliance certification service.
+
+## Interoperability, Ecosystem Collaboration & Our Vision
+### Toward Cross-Platform Evidence Assurance for Agent Commerce
+
+ProofPath's vision is to become an **open, reusable, platform-independent evidence and accountability infrastructure layer for agent commerce**.
+
+Autonomous transactions can span payment protocols, facilitators, blockchain networks, identity frameworks, agent registries and commercial service providers. Successful payment is only part of the story: participants also need to understand **what happened, who was involved, what authorizations and policies applied, whether settlement occurred, and what evidence supports those conclusions**.
+
+ProofPath aims to make evidence portable and independently assessable across technical and organizational boundaries. It complements rather than replaces payment, identity, blockchain and commercial infrastructure, while respecting the different trust models of those systems.
+
+### Interoperability as a Core Design Principle
+
+We pursue three principles:
+
+1. **Platform independence:** Avoid unnecessary coupling to any particular blockchain, payment facilitator, identity framework or agent-commerce platform.
+2. **Verifiable interoperability:** Preserve provenance, verification methods, claim boundaries and independently approved trust assumptions when evidence moves between systems.
+3. **Open ecosystem collaboration:** Learn from independent implementations and practical integration scenarios to define the smallest reusable verification and evidence contracts.
+
+**Portability must never promote a recorded assertion, a valid data format or a matching hash into independent proof of a real-world event. Interoperability must preserve assurance semantics.**
+
+### From Concordium to the Broader Ecosystem
+
+ProofPath's initial specialized verification profile focuses on Concordium and x402, including facilitator receipt validation, Protocol-Level Token settlement observations and Agent Registry/key authority evidence. The platform-neutral evidence foundation is intended to support other environments, but the current specialized verifiers and composer are not universal cross-chain implementations.
+
+Our next architectural objective is **evidence-driven interoperability validation with independently operated systems**. We seek to establish which source formats, trust policies, claim contracts and minimal adapters can genuinely be reused across payment protocols and networks.
+
+The integrated PP-04-B application demonstrates the existing architecture using **controlled synthetic evidence**. Live external interoperability, production source authentication, generalized protocol/network adapters and production custody remain future validation work—not completed integrations.
+
+### Ecosystem Partners & Collaborators
+
+ProofPath is being developed with an emphasis on open ecosystem collaboration and interoperability across independent implementations.
+
+We welcome collaboration with payment facilitators, blockchain ecosystems, identity providers, agent-framework developers and infrastructure partners.
+
+**Current ecosystem partners and collaborators**
+
+| Partner | Capabilities / Expertise |
+| --- | --- |
+| [Fizzl](https://fizzl.eu/) | Fizzl develops tooling and infrastructure for AI-agent payments, including [x402 Doctor](https://x402-doctor.fizzl.eu/), [Fizzl Gateway](https://fizzl.eu/gateway/), and agent-payment security capabilities. |
+
+Our ecosystem collaborations support the broader objective of developing open, reusable evidence and accountability infrastructure for agent commerce.
+
+Partner listings recognize ecosystem collaboration and areas of expertise. They do not imply completed technical integration, independently validated interoperability, certification or production support.
+
+Additional information about specific integrations and validation results will be published when appropriate.
+
+### Toward Open, Reusable Middleware
+
+Our long-term ambition is to make ProofPath reusable middleware that developers and infrastructure providers can integrate without replacing their existing payment, identity, agent or blockchain stacks. We favor narrowly scoped verification components, explicit trust contracts and stable evidence representation over speculative universal integration claims.
+
+This middleware direction is a **vision and design objective**, not a claim that a production adapter ecosystem has already shipped.
+
+### Technical Paper and Invitation to Collaborate
+
+Read [ProofPath — Interoperability Architecture & Cross-Platform Evidence Assurance](docs/interoperability-architecture.md) for the current implemented architecture, proposed interoperability contract, trust-boundary invariants and validation method.
+
+We invite independent implementers, developers, infrastructure providers and researchers to [open a GitHub issue](https://github.com/rgraulus/proofpath/issues) to propose reproducible interoperability scenarios and technical contributions.
+
+**Agent commerce should not only work across platforms—its evidence and assurances should travel across them too.**
 
 ## Architecture
 
@@ -564,15 +625,30 @@ This distinction is essential.
 
 Likewise, a `verified` source assessment is not automatically equivalent to a fully verified commercial transaction.
 
-## EU AI Act Recordkeeping
+## EU AI Act — Traceability, Accountability & Recordkeeping Alignment
+ProofPath is designed as an **independent evidence and accountability infrastructure layer** for AI-agent-mediated transactions. Its portable evidence and audit-trail capabilities may support traceability, accountability, regulatory oversight and selected recordkeeping objectives associated with the **EU Artificial Intelligence Act (Regulation (EU) 2024/1689, as amended)**—particularly Articles 12, 19 and 26, where applicable.
 
-ProofPath includes an engineering mapping of selected recordkeeping considerations associated with EU AI Act Articles 12, 19 and 26.
+### Architectural Alignment
 
-See [Article 12 Mapping](docs/article12-mapping.md).
+- **Structured audit records:** Versioned, transaction-correlated events supporting reconstruction of activity actually captured within a declared scope.
+- **Evidence integrity and provenance:** Commitments, provenance assertions and verification mechanisms distinguishing recorded data from authenticated sources and verified claims.
+- **Agent accountability:** Evidence relevant to assessing agent registry identity, keys, authority, delegation and principal/owner relationships within defined trust boundaries; no blanket claim of legal identity verification.
+- **Audit portability:** Platform-neutral evidence manifests, bounded composition and public/restricted export profiles supporting assessment and controlled disclosure.
+- **Evidence governance:** Explicit metadata for declared completeness, retention responsibility, audit scope and disclosure profile.
 
-This is a technical mapping, not a legal opinion or compliance certification.
+### Regulatory Scope and Limitations
 
-Applicable obligations, deployment classification, operational logging, retention, human oversight and conformity assessment remain dependent on the particular system and its use.
+Articles 12, 19 and 26 contain obligations relevant to certain **high-risk AI systems** and their providers or deployers. Applicability depends on the actual AI system, intended purpose, risk classification, operator role, deployment context, applicable law and relevant application dates.
+
+ProofPath **does not establish EU AI Act compliance**, constitute a conformity assessment, provide regulatory certification or determine an AI system's legal classification. Nor does it currently supply comprehensive automatic AI-system lifetime logging, enforceable retention and deletion, production-grade evidence custody, an operational monitoring/notification program or deployment-specific governance and human-oversight controls.
+
+**Engineering alignment with recordkeeping objectives must not be represented as proof of regulatory compliance.**
+
+### Technical References
+
+See [ProofPath — EU AI Act Technical Alignment](docs/eu-ai-act-technical-alignment.md) for the cross-milestone implementation assessment, applicability boundaries, Article 12/19/26 mapping and remaining deployment responsibilities.
+
+The [original PP-01 Article 12 Mapping](docs/article12-mapping.md) is preserved as a historical technical checkpoint; its deferred/pending descriptions should not be read as current PP-04-B status.
 
 ## Documentation
 
@@ -582,6 +658,8 @@ Primary entrypoints:
 
 - [PP-01 Technical Contract](docs/pp01-contract.md)
 - [Article 12 Mapping](docs/article12-mapping.md)
+- [EU AI Act Technical Alignment — Evidence, Traceability & Accountability](docs/eu-ai-act-technical-alignment.md)
+- [Interoperability Architecture & Cross-Platform Evidence Assurance](docs/interoperability-architecture.md)
 - [Evidence Manifest v1 Schema](schemas/proofpath-evidence-v1.schema.json)
 - [Audit Event v1 Schema](schemas/proofpath-audit-event-v1.schema.json)
 - [PP-04-B Integrated Demo README](demo/pp04/README.md)
@@ -591,16 +669,9 @@ The demonstration documents define how to execute PP-04-B and interpret its resu
 
 ## Next Steps
 
-The immediate project objective is to complete PP-04-B repository acceptance and prepare one focused pull request.
+PP-04-B was merged into `main` through [PR #8](https://github.com/rgraulus/proofpath/pull/8). The current published baseline is a validated offline synthetic evidence-assurance demonstration.
 
-That review includes:
-
-- Final documentation consistency checks.
-- Independent CLI/server typechecking.
-- Final automated regression and build confirmation.
-- Exact repository-file scope verification.
-- Review of the root README changes.
-- Explicit authorization before staging, committing, pushing or submitting the PR.
+Near-term documentation priorities include maintaining the EU AI Act technical alignment paper and interoperability architecture paper as versioned living references, and validating future integration proposals against independent evidence sources before claiming cross-platform support.
 
 Future work may include PP-04-C live/Testnet evidence integration and broader application packaging.
 
