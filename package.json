@@ -10,7 +10,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "tsx --test tests/*.test.ts"
+    "test": "tsx --test tests/*.test.ts",
+    "build:sdk": "tsc -p tsconfig.sdk.json"
   },
   "dependencies": {
     "@concordium/web-sdk": "12.0.2",
@@ -21,5 +22,39 @@
     "@types/node": "^22.15.0",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
-  }
+  },
+  "main": "./dist/sdk/core.js",
+  "types": "./dist/sdk/core.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/sdk/core.d.ts",
+      "default": "./dist/sdk/core.js"
+    },
+    "./x402": {
+      "types": "./dist/sdk/x402.d.ts",
+      "default": "./dist/sdk/x402.js"
+    },
+    "./assessment": {
+      "types": "./dist/sdk/assessment.d.ts",
+      "default": "./dist/sdk/assessment.js"
+    },
+    "./concordium": {
+      "types": "./dist/sdk/concordium.d.ts",
+      "default": "./dist/sdk/concordium.js"
+    },
+    "./schemas/*": "./schemas/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/sdk/",
+    "dist/core/",
+    "dist/pp02/",
+    "dist/verification/",
+    "dist/adapters/x402/",
+    "dist/adapters/concordium/",
+    "dist/composition/",
+    "dist/profiles/",
+    "schemas/",
+    "docs/i5-sdk-integration.md"
+  ]
 }
