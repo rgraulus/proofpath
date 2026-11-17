@@ -472,3 +472,132 @@ I5 completion does not authorize npm publication, production hosting, new trust 
 - [SDK build configuration](../tsconfig.sdk.json)
 
 **Document status:** I5 working integration contract. Final acceptance evidence and disposition remain pending.
+
+
+---
+
+## 13. Retrospective I5 Final Acceptance Addendum
+
+**Addendum date:** 2026-11-17  
+**Milestone:** I5 — Controlled SDK Packaging and Independent Consumer Acceptance  
+**Final milestone disposition:** ACCEPTED — Historical Acceptance Confirmed  
+**Authoritative acceptance reference:** PP-R2-D1 Registry Assurance Profile v1, Section 2.1  
+**Original I5 working evidence:** Preserved unchanged above  
+**Public SDK publication:** NOT AUTHORIZED  
+
+### 13.1 Purpose
+
+This retrospective addendum reconciles the original I5 working integration document with the subsequently accepted I5 milestone.
+
+The earlier portions of this document record an intermediate implementation and acceptance checkpoint. References to provisional, partial, or pending gates describe that historical checkpoint and must not be interpreted as the final I5 milestone disposition.
+
+This addendum records the later accepted outcome without rewriting the original observations or attributing new validation activity to I6.
+
+### 13.2 Authoritative final I5 acceptance
+
+The accepted PP-R2-D1 Registry Assurance Profile v1 records that the I5 milestone had been completed and accepted before the R2 assurance-design work.
+
+The recorded final I5 acceptance baseline is:
+
+- **SDK acceptance gates:** 10/10 accepted.
+- **Repository regression tests:** 388/388 passed.
+- **SDK packaging:** Controlled private SDK package.
+- **SDK entry points:** Four supported public package entry points.
+- **Independent consumer validation:** Established through the I5 acceptance process.
+- **Public npm publication:** Not authorized.
+
+The final acceptance followed the intermediate observations recorded in Sections 1–12 of this document.
+
+The original gate register remains preserved as historical engineering evidence.
+
+It is not a statement that SDK-01, SDK-08, SDK-09, or SDK-10 remain unresolved after final I5 acceptance.
+
+### 13.3 Accepted SDK integration boundary
+
+The accepted I5 package remains:
+
+`@proofpath/core`
+
+Version:
+
+`0.1.0`
+
+The package is configured as private and exposes four supported integration surfaces:
+
+1. `@proofpath/core`
+2. `@proofpath/core/x402`
+3. `@proofpath/core/assessment`
+4. `@proofpath/core/concordium`
+
+The accepted packaging result establishes controlled distribution and consumption through the supported local-package workflow.
+
+It does not establish public npm availability, universal cross-platform compatibility, production certification, or a commitment to unrestricted external distribution.
+
+### 13.4 Assurance limitations preserved
+
+I5 acceptance did not introduce or authorize new verification semantics.
+
+In particular:
+
+- `mapped_unverified` challenge mapping is not verified payment evidence.
+- Structural binding consistency is not independently authenticated source evidence.
+- A valid cryptographic receipt does not independently establish settlement or delivery.
+- Trusted-node settlement observations are not independent consensus verification.
+- Registry ownership does not establish human identity.
+- Registered agent/key evidence does not establish unrestricted action-specific authority.
+- Component-specific verification is not transaction-wide assurance.
+- Successful SDK installation does not establish production readiness.
+
+Existing package dependency and runtime-isolation limitations remain subject to their documented scope.
+
+Any future dependency remediation, public distribution, or production hardening requires a separate decision.
+
+### 13.5 Relationship to R4 Registry governance
+
+The subsequently accepted R4 governance decision is:
+
+**HISTORICAL CLAIMS CONDITIONALLY ACCEPTED — IMPLEMENTATION AND OPERATIONAL REGISTRY TRUST DEFERRED.**
+
+Its standing limitations remain:
+
+- `TRUST-01 = OPEN`
+- `Module C = UNAPPROVED`
+- `C5 = NOT ESTABLISHED`
+- `C6 = NOT ESTABLISHED`
+- `PROVENANCE_NOT_APPROVAL_READY`
+
+Neither I5 acceptance nor the present addendum changes these restrictions.
+
+### 13.6 Relationship to I6 roadmap closeout
+
+I6 is a separate, subsequent milestone addressing developer integration experience and final roadmap closeout.
+
+The accepted I5 evidence provides an established baseline for I6.
+
+Historical I5 test results must not be reported as newly executed I6 validations.
+
+I6 must independently record its actual checks, any unavailable validation prerequisites, the supported developer workflow, and its final project-owner decision.
+
+The governing I6 working document is:
+
+`docs/i6-developer-experience-roadmap-closeout.md`
+
+### 13.7 Retrospective disposition
+
+**I5 MILESTONE: ACCEPTED AND CLOSED.**
+
+**I5 SDK ACCEPTANCE: 10/10 GATES.**
+
+**I5 REGRESSION BASELINE: 388/388 TESTS PASSED.**
+
+**PUBLIC SDK PUBLICATION: NOT AUTHORIZED.**
+
+**PRODUCTION CERTIFICATION: NOT CLAIMED.**
+
+The provisional status statements in the original working integration record are retained solely as historical observations.
+
+This retrospective addendum reconciles those observations with the accepted I5 milestone and does not grant any new technical, operational, governance, or publication authority.
+
+---
+
+**End of I5 Retrospective Final Acceptance Addendum — November 17, 2026**

@@ -48,6 +48,84 @@ At the PP-04-B full repository acceptance checkpoint:
 
 These are engineering validation results, not independent security certification or production-readiness approval.
 
+## Current Roadmap and SDK Status
+
+The accepted ProofPath engineering milestones include PP-01 through
+PP-04-B, the interoperability and middleware-readiness work through
+I5, and the R1–R4 Registry assurance and governance sequence.
+
+I5 completed controlled SDK packaging and independent-consumer
+acceptance, with 10/10 SDK acceptance gates and 388/388 regression
+tests recorded at its historical acceptance checkpoint.
+
+R4 was formally accepted and published on November 17, 2026.
+Its decision conditionally accepts bounded historical C1–C4
+Registry claims while deferring C5, C6, and overall TRUST-01.
+
+**I6 — Developer Experience and Roadmap Closeout** is the final
+remaining milestone in the current implementation roadmap.
+Its developer validation and final project-owner acceptance are
+pending; roadmap completion is not yet claimed.
+
+### Private TypeScript SDK
+
+The existing `@proofpath/core` v0.1.0 package supports Node.js 22+
+and ESM, with four public package entry points:
+
+| Entry point | Supported purpose |
+| --- | --- |
+| `@proofpath/core` | Portable evidence, integrity, provenance, audit, and export |
+| `@proofpath/core/x402` | Bounded Base Mainnet x402 v2 challenge-evidence mapping |
+| `@proofpath/core/assessment` | Deterministic trust and seller-binding assessments |
+| `@proofpath/core/concordium` | Specialized Concordium verification and composition |
+
+The package remains `private: true`. Controlled local packaging
+and independent consumption do not authorize npm publication.
+
+From the repository root, the established SDK build command is:
+
+```bash
+npm run build:sdk
+```
+
+A package-content preview is available through:
+
+```bash
+npm pack --dry-run --ignore-scripts
+```
+
+The full integration workflow, package requirements, and assurance
+limits are documented in the
+[I5 SDK integration record](docs/i5-sdk-integration.md) and the
+[I6 developer experience and roadmap closeout draft](docs/i6-developer-experience-roadmap-closeout.md).
+
+The current x402 mapper returns `mapped_unverified` for a supported
+structural challenge-binding match. It does not establish payment
+execution, settlement, or delivery.
+
+Successful component verification is not transaction-wide assurance.
+
+### Registry governance limitations
+
+The accepted R4 disposition preserves:
+
+- `TRUST-01 = OPEN`
+- `Module C = UNAPPROVED`
+- `C5 = NOT ESTABLISHED`
+- `C6 = NOT ESTABLISHED`
+- `PROVENANCE_NOT_APPROVAL_READY`
+
+Historical Registry consistency is not implementation approval.
+Trusted-node observations are not independent consensus verification,
+and agent/key registration does not establish human identity or
+unrestricted action-specific authority.
+
+See the [R4 governance disposition](docs/r4-registry-trust-governance-disposition.md).
+
+Neither I5 acceptance nor eventual I6 roadmap closeout constitutes
+production certification, operational Registry trust approval,
+or unrestricted cross-platform interoperability.
+
 ## Why ProofPath?
 
 Agent-mediated commercial transactions can involve multiple independent systems:
@@ -667,14 +745,30 @@ Primary entrypoints:
 
 The demonstration documents define how to execute PP-04-B and interpret its results without overstating assurance.
 
-## Next Steps
+## Remaining Roadmap Work
 
-PP-04-B was merged into `main` through [PR #8](https://github.com/rgraulus/proofpath/pull/8). The current published baseline is a validated offline synthetic evidence-assurance demonstration.
+**I6 — Developer Experience and Roadmap Closeout** is in progress.
 
-Near-term documentation priorities include maintaining the EU AI Act technical alignment paper and interoperability architecture paper as versioned living references, and validating future integration proposals against independent evidence sources before claiming cross-platform support.
+The required final work is to validate the existing private SDK
+developer integration workflow, reconcile historical I5 acceptance
+documentation, verify the unchanged assurance contracts, execute
+appropriate regressions, and obtain explicit project-owner acceptance
+and separately authorized Git publication.
 
-Future work may include PP-04-C live/Testnet evidence integration and broader application packaging.
+The authoritative working I6 contract is
+[ProofPath I6 — Developer Experience and Roadmap Closeout](docs/i6-developer-experience-roadmap-closeout.md).
 
-Those activities require separate technical scope, trusted-source integration, security review and acceptance criteria.
+Potential subsequent initiatives include PP-04-C live/Testnet
+integration, independent external interoperability validation,
+additional Registry implementation assurance, public SDK
+distribution, and production security and custody capabilities.
 
-**ProofPath's current milestone is a validated, integrated synthetic evidence-assurance demonstration—not a production deployment or independent certification of real commercial transactions.**
+These remain separately scoped future work, not conditions
+automatically imposed on I6.
+
+**Current status: I6 underway; final implementation roadmap
+closeout pending formal acceptance and publication.**
+
+ProofPath is not claiming production certification,
+unrestricted transaction verification, or operational
+approval of the deferred Registry implementation.
