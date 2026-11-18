@@ -4,16 +4,22 @@
  */
 import test from "node:test";
 import assert from "node:assert/strict";
+import { EventEmitter } from "node:events";
+import { createRequire, syncBuiltinESMExports } from "node:module";
+import { Socket } from "node:net";
+import { mock } from "node:test";
 import {
   C08C_SEARCH_ENDPOINT,
   C08C_MAX_RESPONSE_BYTES,
   C08C_SEARCH_LIMIT,
   buildC08CSearchUrl,
-  acquireC08CSearchObservation
+  acquireC08CSearchObservation,
+  acquireC08CControlledLiveObservation
 } from "../src/application/pp04/testnetLiveSource.js";
 import {
   runC08COfflineObservation,
-  runC08CLiveObservation
+  runC08CLiveObservation,
+  runC08CGateBControlledObservation
 } from "../src/application/pp04/testnetLiveRunner.js";
 import type {
   C08BExpectedCrpPayment
@@ -280,4 +286,341 @@ test("operational runner remains prohibited", () => {
     () => runC08CLiveObservation(),
     /c08c_gate_b_live_not_authorized/
   );
+});
+
+
+/**
+ * C-08C Gate B transport tests.
+ *
+ * Every authorized request is intercepted in memory.
+ * Socket.connect is separately blocked as defense in depth.
+ *
+ * Operational flags are isolated to the test process and
+ * restored after each scenario.
+ */
+const gateBRequire = createRequire(import.meta.url);
+const gateBHttp = gateBRequire("node:http") as typeof import("node:http");
+
+type GateBScenario = {
+  readonly status?: number;
+  readonly headers?: Record<string, string>;
+  readonly body?: string;
+  readonly event?: "error" | "aborted" | "timeout" | "hang";
+};
+
+async function withGateBMock<T>(
+  scenario: GateBScenario,
+  action: (capture: {
+    requests: () => number;
+    sockets: () => number;
+    options: () => Record<string, unknown> | null;
+  }) => Promise<T>,
+  authorized = true
+): Promise<T> {
+  const flags = [
+    "PROOFPATH_C08C_GATE_B_LIVE_ENABLED",
+    "PROOFPATH_C08C_GATE_B_LOOPBACK_CONFIRMED"
+  ];
+
+  const previous = flags.map(name => process.env[name]);
+
+  let requestCount = 0;
+  let socketCount = 0;
+  let requestOptions: Record<string, unknown> | null = null;
+
+  try {
+    for (const name of flags) {
+      delete process.env[name];
+    }
+
+    mock.method(Socket.prototype, "connect", function () {
+      socketCount++;
+      throw new Error("real_socket_forbidden");
+    });
+
+    mock.method(
+      gateBHttp,
+      "request",
+      (options: Record<string, unknown>,
+       onResponse: (incoming: EventEmitter & {
+         statusCode?: number;
+         headers?: Record<string, string>;
+       }) => void) => {
+        requestCount++;
+        requestOptions = options;
+
+        const request = new EventEmitter() as EventEmitter & {
+          end: () => unknown;
+          destroy: () => unknown;
+          setTimeout: (
+            ms: number,
+            callback: () => void
+          ) => unknown;
+        };
+
+        let timeoutCallback: (() => void) | undefined;
+
+        request.setTimeout = (_ms, callback) => {
+          timeoutCallback = callback;
+          return request;
+        };
+
+        request.destroy = () => request;
+
+        request.end = () => {
+          queueMicrotask(() => {
+            if (scenario.event === "hang") {
+              // Model an established TCP connection whose
+              // HTTP response then hangs indefinitely.
+              // This clears only the connection deadline.
+              const socket = new EventEmitter() as
+                EventEmitter & { connecting: boolean };
+
+              socket.connecting = false;
+              request.emit("socket", socket);
+              return;
+            }
+
+            if (scenario.event === "error") {
+              request.emit("error", new Error("synthetic_transport_error"));
+              return;
+            }
+
+            if (scenario.event === "timeout") {
+              timeoutCallback?.();
+              return;
+            }
+
+            const incoming = new EventEmitter() as EventEmitter & {
+              statusCode?: number;
+              headers?: Record<string, string>;
+            };
+
+            incoming.statusCode = scenario.status ?? 200;
+            incoming.headers = scenario.headers ?? {
+              "content-type": "application/json"
+            };
+
+            onResponse(incoming);
+
+            if (scenario.event === "aborted") {
+              incoming.emit("aborted");
+              return;
+            }
+
+            if (scenario.body !== undefined) {
+              incoming.emit("data", Buffer.from(scenario.body));
+            }
+
+            incoming.emit("end");
+          });
+
+          return request;
+        };
+
+        return request;
+      }
+    );
+
+    syncBuiltinESMExports();
+
+    if (authorized) {
+      for (const name of flags) {
+        process.env[name] = "true";
+      }
+    }
+
+    return await action({
+      requests: () => requestCount,
+      sockets: () => socketCount,
+      options: () => requestOptions
+    });
+  } finally {
+    for (let i = 0; i < flags.length; i++) {
+      const name = flags[i]!;
+      const value = previous[i];
+
+      if (value === undefined) {
+        delete process.env[name];
+      } else {
+        process.env[name] = value;
+      }
+    }
+
+    mock.restoreAll();
+    syncBuiltinESMExports();
+  }
+}
+
+test("Gate B: default-denied before HTTP acquisition", async () => {
+  await withGateBMock({}, async capture => {
+    const result = await acquireC08CControlledLiveObservation(expected);
+
+    assert.equal(result.status, "blocked");
+    assert.equal(result.reasonCode, "live_not_authorized");
+    assert.equal(capture.requests(), 0);
+    assert.equal(capture.sockets(), 0);
+  }, false);
+});
+
+test("Gate B: fixed GET, supported filters, synthetic success", async () => {
+  await withGateBMock({
+    body: JSON.stringify(searchResponse([]))
+  }, async capture => {
+    const result = await acquireC08CControlledLiveObservation(expected);
+
+    assert.equal(result.status, "observed");
+    assert.equal(capture.requests(), 1);
+    assert.equal(capture.sockets(), 0);
+
+    if (result.status === "observed") {
+      assert.equal(result.sourceAuthenticated, false);
+      assert.equal(result.settlementIndependentlyVerified, false);
+    }
+
+    const options = capture.options();
+    assert.ok(options);
+
+    assert.equal(options.method, "GET");
+    assert.equal(options.hostname, "127.0.0.1");
+    assert.equal(options.port, 8080);
+    assert.equal(options.agent, false);
+
+    const path = String(options.path);
+    const url = new URL("http://127.0.0.1:8080" + path);
+
+    assert.equal(url.pathname, "/v1/crp/payments/search");
+    assert.equal(url.searchParams.get("merchantId"), expected.merchantId);
+    assert.equal(url.searchParams.get("network"), expected.network);
+    assert.equal(url.searchParams.get("tokenId"), expected.asset.tokenId);
+    assert.equal(url.searchParams.get("payTo"), expected.payTo);
+    assert.equal(url.searchParams.get("limit"), "100");
+    assert.equal(url.searchParams.has("nonce"), false);
+    assert.equal(url.searchParams.has("amount"), false);
+
+    const headers = options.headers as Record<string, string>;
+    assert.equal(headers["accept-encoding"], "identity");
+    assert.equal(headers.authorization, undefined);
+    assert.equal(headers.cookie, undefined);
+  });
+});
+
+test("Gate B: invalid expected tuple never reaches HTTP", async () => {
+  await withGateBMock({}, async capture => {
+    const result = await acquireC08CControlledLiveObservation({
+      ...expected,
+      network: "concordium:mainnet"
+    });
+
+    assert.equal(result.status, "blocked");
+    assert.equal(result.reasonCode, "invalid_source_configuration");
+    assert.equal(capture.requests(), 0);
+    assert.equal(capture.sockets(), 0);
+  });
+});
+
+test("Gate B: candidate stays sanitized and untrusted", async () => {
+  await withGateBMock({
+    body: JSON.stringify(searchResponse())
+  }, async capture => {
+    const result = await runC08CGateBControlledObservation(expected);
+
+    assert.equal(result.status, "candidate");
+    assert.equal(result.sourceAuthenticated, false);
+    assert.equal(result.receiptAuthenticated, false);
+    assert.equal(result.settlementIndependentlyVerified, false);
+    assert.equal(JSON.stringify(result).includes(jws), false);
+    assert.equal(capture.requests(), 1);
+    assert.equal(capture.sockets(), 0);
+  });
+});
+
+const gateBFailures: ReadonlyArray<{
+  name: string;
+  scenario: GateBScenario;
+}> = [
+  {
+    name: "HTTP redirect",
+    scenario: { status: 302, headers: { location: "https://example.org" } }
+  },
+  {
+    name: "HTTP authentication rejection",
+    scenario: { status: 401 }
+  },
+  {
+    name: "unsupported content type",
+    scenario: { headers: { "content-type": "text/plain" } }
+  },
+  {
+    name: "unsupported compression",
+    scenario: { headers: {
+      "content-type": "application/json",
+      "content-encoding": "gzip"
+    } }
+  },
+  {
+    name: "oversized declared content length",
+    scenario: { headers: {
+      "content-type": "application/json",
+      "content-length": String(C08C_MAX_RESPONSE_BYTES + 1)
+    } }
+  },
+  {
+    name: "oversized streamed response",
+    scenario: { body: "x".repeat(C08C_MAX_RESPONSE_BYTES + 1) }
+  },
+  {
+    name: "truncated declared response",
+    scenario: { headers: {
+      "content-type": "application/json",
+      "content-length": "500"
+    }, body: "{}" }
+  },
+  {
+    name: "malformed JSON",
+    scenario: { body: "{not-json" }
+  },
+  {
+    name: "aborted response stream",
+    scenario: { event: "aborted" }
+  },
+  {
+    name: "transport failure",
+    scenario: { event: "error" }
+  },
+  {
+    name: "socket timeout",
+    scenario: { event: "timeout" }
+  }
+];
+
+for (const failure of gateBFailures) {
+  test("Gate B: fail-closed " + failure.name, async () => {
+    await withGateBMock(failure.scenario, async capture => {
+      const result = await acquireC08CControlledLiveObservation(expected);
+
+      assert.equal(result.status, "unavailable");
+      assert.equal(result.reasonCode, "transport_failed");
+      assert.equal(result.response, null);
+      assert.equal(capture.requests(), 1);
+      assert.equal(capture.sockets(), 0);
+    });
+  });
+}
+
+test("Gate B: hanging transport reaches total deadline", async () => {
+  await withGateBMock({ event: "hang" }, async capture => {
+    const started = Date.now();
+
+    const result = await acquireC08CControlledLiveObservation(expected);
+
+    const elapsed = Date.now() - started;
+
+    assert.equal(result.status, "unavailable");
+    assert.equal(result.reasonCode, "transport_failed");
+    assert.ok(elapsed >= 4500);
+    assert.ok(elapsed < 8000);
+    assert.equal(capture.requests(), 1);
+    assert.equal(capture.sockets(), 0);
+  });
 });

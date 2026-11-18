@@ -10,6 +10,8 @@
  * trust approval, or independent settlement verification.
  */
 
+import * as http from "node:http";
+
 import type {
   C08BExpectedCrpPayment
 } from "./testnetSource.js";
@@ -18,7 +20,8 @@ export const C08C_SEARCH_ENDPOINT =
   "http://127.0.0.1:8080/v1/crp/payments/search";
 
 export const C08C_MAX_RESPONSE_BYTES = 65536;
-// A live HTTP timeout will be implemented only if Gate B is authorized.
+export const C08C_CONNECT_TIMEOUT_MS = 2000;
+export const C08C_TOTAL_TIMEOUT_MS = 5000;
 export const C08C_SEARCH_LIMIT = 100;
 
 /**
@@ -256,6 +259,256 @@ export async function acquireC08CSearchObservation(
 
   try {
     const body = await readBoundedJson(input.response);
+
+    return {
+      status: "observed",
+      reasonCode: "bounded_search_response",
+      response: body,
+      sourceAuthenticated: false,
+      settlementIndependentlyVerified: false
+    };
+  } catch {
+    return {
+      status: "unavailable",
+      reasonCode: "transport_failed",
+      response: null
+    };
+  }
+}
+
+/**
+ * Gate B operational activation remains default-denied.
+ * Both exact-value flags must be explicitly configured.
+ *
+ * Loopback confirmation is an operational assertion,
+ * not proof of the Facilitator's actual bind address.
+ */
+function gateBLiveAuthorized(): boolean {
+  return process.env.PROOFPATH_C08C_GATE_B_LIVE_ENABLED === "true" &&
+    process.env.PROOFPATH_C08C_GATE_B_LOOPBACK_CONFIRMED === "true";
+}
+
+/**
+ * Single-request, read-only native HTTP acquisition.
+ *
+ * Fixed numeric loopback host and port, GET only.
+ * No arbitrary destination, proxy, redirect following,
+ * cookies, authorization headers, retries or writes.
+ */
+function fetchBoundedC08CSearch(
+  target: string
+): Promise<Response> {
+  return new Promise((resolve, reject) => {
+    let url: URL;
+
+    try {
+      url = new URL(target);
+    } catch {
+      reject(new Error("invalid_destination"));
+      return;
+    }
+
+    if (url.protocol !== "http:" ||
+        url.hostname !== "127.0.0.1" ||
+        url.port !== "8080" ||
+        url.pathname !== "/v1/crp/payments/search" ||
+        url.username !== "" ||
+        url.password !== "" ||
+        url.hash !== "") {
+      reject(new Error("invalid_destination"));
+      return;
+    }
+
+    const chunks: Buffer[] = [];
+    let total = 0;
+    let settled = false;
+
+    let request: http.ClientRequest | undefined;
+    let connectTimer: NodeJS.Timeout | undefined;
+    let totalTimer: NodeJS.Timeout | undefined;
+
+    function finish(error?: Error, response?: Response): void {
+      if (settled) return;
+      settled = true;
+
+      if (connectTimer) clearTimeout(connectTimer);
+      if (totalTimer) clearTimeout(totalTimer);
+
+      if (error) {
+        request?.destroy();
+        reject(error);
+        return;
+      }
+
+      if (!response) {
+        request?.destroy();
+        reject(new Error("missing_response"));
+        return;
+      }
+
+      resolve(response);
+    }
+
+    try {
+      request = http.request({
+        protocol: "http:",
+        hostname: "127.0.0.1",
+        port: 8080,
+        path: url.pathname + url.search,
+        method: "GET",
+        agent: false,
+        maxHeaderSize: 8192,
+        headers: {
+          accept: "application/json",
+          "accept-encoding": "identity",
+          connection: "close"
+        }
+      }, incoming => {
+        if (incoming.statusCode !== 200) {
+          finish(new Error("invalid_http_status"));
+          return;
+        }
+
+        const contentType = incoming.headers["content-type"];
+
+        if (typeof contentType !== "string" ||
+            !/^application\/json(?:\s*;|$)/i.test(contentType)) {
+          finish(new Error("invalid_content_type"));
+          return;
+        }
+
+        const encoding = incoming.headers["content-encoding"];
+
+        if (encoding !== undefined && encoding !== "identity") {
+          finish(new Error("unsupported_encoding"));
+          return;
+        }
+
+        const declared = incoming.headers["content-length"];
+
+        if (declared !== undefined &&
+            (typeof declared !== "string" ||
+             !/^\d+$/.test(declared) ||
+             !Number.isSafeInteger(Number(declared)) ||
+             Number(declared) > C08C_MAX_RESPONSE_BYTES)) {
+          finish(new Error("invalid_content_length"));
+          return;
+        }
+
+        incoming.on("data", (chunk: Buffer) => {
+          if (settled) return;
+
+          total += chunk.byteLength;
+
+          if (total > C08C_MAX_RESPONSE_BYTES) {
+            finish(new Error("response_too_large"));
+            return;
+          }
+
+          chunks.push(chunk);
+        });
+
+        incoming.on("aborted", () => {
+          finish(new Error("response_aborted"));
+        });
+
+        incoming.on("error", () => {
+          finish(new Error("response_failed"));
+        });
+
+        incoming.on("end", () => {
+          if (settled) return;
+
+          if (declared !== undefined &&
+              Number(declared) !== total) {
+            finish(new Error("content_length_mismatch"));
+            return;
+          }
+
+          try {
+            const bytes = new Uint8Array(
+              Buffer.concat(chunks, total)
+            );
+
+            finish(undefined, new Response(bytes, {
+              status: 200,
+              headers: { "content-type": contentType }
+            }));
+          } catch {
+            finish(new Error("response_construction_failed"));
+          }
+        });
+      });
+
+      request.on("socket", socket => {
+        if (!socket.connecting) {
+          if (connectTimer) clearTimeout(connectTimer);
+        } else {
+          socket.once("connect", () => {
+            if (connectTimer) clearTimeout(connectTimer);
+          });
+        }
+      });
+
+      request.on("error", () => {
+        finish(new Error("http_transport_failed"));
+      });
+
+      request.setTimeout(C08C_CONNECT_TIMEOUT_MS, () => {
+        finish(new Error("http_socket_timeout"));
+      });
+
+      connectTimer = setTimeout(() => {
+        finish(new Error("http_connect_timeout"));
+      }, C08C_CONNECT_TIMEOUT_MS);
+
+      totalTimer = setTimeout(() => {
+        finish(new Error("http_total_deadline"));
+      }, C08C_TOTAL_TIMEOUT_MS);
+
+      request.end();
+    } catch {
+      finish(new Error("http_request_failed"));
+    }
+  });
+}
+
+/**
+ * Separately gated Gate B acquisition.
+ *
+ * Does not accept user-supplied URLs, methods, transports,
+ * request headers or response fixtures.
+ *
+ * A successful observation provides no authenticated-source
+ * or independently verified settlement assurance.
+ */
+export async function acquireC08CControlledLiveObservation(
+  expected: C08BExpectedCrpPayment
+): Promise<C08CSourceResult> {
+  if (!gateBLiveAuthorized()) {
+    return {
+      status: "blocked",
+      reasonCode: "live_not_authorized",
+      response: null
+    };
+  }
+
+  const target = buildC08CSearchUrl(
+    expected,
+    C08C_SEARCH_ENDPOINT
+  );
+
+  if (!target) {
+    return {
+      status: "blocked",
+      reasonCode: "invalid_source_configuration",
+      response: null
+    };
+  }
+
+  try {
+    const response = await fetchBoundedC08CSearch(target);
+    const body = await readBoundedJson(response);
 
     return {
       status: "observed",

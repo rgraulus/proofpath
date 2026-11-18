@@ -12,6 +12,7 @@
 
 import {
   acquireC08CSearchObservation,
+  acquireC08CControlledLiveObservation,
   C08C_SEARCH_ENDPOINT
 } from "./testnetLiveSource.js";
 
@@ -140,4 +141,49 @@ export async function runC08COfflineObservation(
  */
 export function runC08CLiveObservation(): never {
   throw new Error("c08c_gate_b_live_not_authorized");
+}
+
+/**
+ * Gate B controlled observation.
+ *
+ * Operational authorization and the fixed HTTP transport
+ * are enforced by the dedicated Gate B acquisition source.
+ *
+ * This runner adds no additional network access and
+ * preserves C-08B exact-tuple correlation.
+ *
+ * A candidate is not authenticated payment evidence.
+ */
+export async function runC08CGateBControlledObservation(
+  expected: C08BExpectedCrpPayment
+): Promise<C08COfflineRunnerResult> {
+  const observation =
+    await acquireC08CControlledLiveObservation(expected);
+
+  if (observation.status !== "observed") {
+    return sourceFailure(observation);
+  }
+
+  const mapping = mapC08BCrpSearchResponse(
+    expected,
+    observation.response
+  );
+
+  if (mapping.status !== "candidate") {
+    return {
+      status: mapping.status,
+      reasonCode: mapping.reasonCode,
+      sourceAuthenticated: false,
+      settlementIndependentlyVerified: false,
+      receiptAuthenticated: false
+    };
+  }
+
+  return {
+    status: "candidate",
+    reasonCode: "unique_receipt_candidate",
+    sourceAuthenticated: false,
+    settlementIndependentlyVerified: false,
+    receiptAuthenticated: false
+  };
 }
