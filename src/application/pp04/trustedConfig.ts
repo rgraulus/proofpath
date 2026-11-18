@@ -31,10 +31,10 @@ import type {
  */
 export const PP04_APPROVED_SCHEMA_DIGESTS = Object.freeze({
   evidence:
-    "2a5b59a688ccebb5ca4662f5cdb06db126a0f6fbbfefda92143105f808f29748",
+    "b5b59658fc9639229e6d84f411581e24c8c8b22c3ceba26882bae35ad87f2d1b",
 
   audit:
-    "847ef5e9d12c7c68f1579a70ca6fbc9a71ff3a751d9a20d473e73f8f37704db2"
+    "382157c158ecfe6084add05e70daa7cbaee7230bf9c0f4b2a0cdac8c1a26894b"
 } as const);
 
 /**
