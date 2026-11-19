@@ -1,3 +1,6 @@
 # Canonical checkout bytes for approved PP-01 schemas
 schemas/proofpath-evidence-v1.schema.json text eol=lf
 schemas/proofpath-audit-event-v1.schema.json text eol=lf
+
+# Canonical checkout bytes for PP-04 synthetic fixtures
+demo/pp04/fixtures/*.json text eol=lf
