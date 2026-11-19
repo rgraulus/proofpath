@@ -60,7 +60,7 @@ const CANONICAL_PATH =
   "demo/pp04/fixtures/canonical.json";
 
 const CANONICAL_SHA256 =
-  "d2e1af29e50dfd22c1bf246b8fb1b5a0aea65b15bf21d7ca5b0575f57cdf304c";
+  "d431257bfeb3611ef4556a34f88b5b5e4a0ee36811d9808e33960e648e2e4f3c";
 
 const EVIDENCE_IDS = {
   receipt: "pp04-evidence-receipt",
