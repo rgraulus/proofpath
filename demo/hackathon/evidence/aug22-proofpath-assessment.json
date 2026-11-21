@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "proofpath.hackathon.portable-assessment.v1",
+  "artifactType": "bounded_historical_commercial_assessment",
+  "pp01EvidenceManifest": false,
+  "transaction": {
+    "network": "concordium:testnet",
+    "transactionHash": "cde858a003bb29d180c352fa3fd7409395829ed156ac9f9166e7f9969f3ad377",
+    "historicalDate": "2026-08-22"
+  },
+  "sourceReferences": {
+    "gateway": {
+      "repositoryRole": "xcf_gateway",
+      "commit": "1861711b1483eeb09a2c66fa84152da69585b604",
+      "path": "config/contracts.json",
+      "sha256": "7cb753570f459d6c60580ffa3ae159ce234d0aae43315c0ea6a26d5c4c7e5dff"
+    },
+    "facilitator": {
+      "sourceRole": "xcf_historical_facilitator_export",
+      "availability": "private_local_file",
+      "sha256": "5a9884e6984434079ddbfc1973fe621ccb7af3a471595f8dfbafadad7939208e"
+    }
+  },
+  "commercialComparison": {
+    "status": "matched",
+    "contractId": "cid_e7fb8ef3933f5b45c7a246267858baf5b84ba60a7c178d0b84cc4e90fc564d98",
+    "checks": [
+      {
+        "name": "historical_contract_identity",
+        "matched": true
+      },
+      {
+        "name": "resource_binding",
+        "matched": true
+      },
+      {
+        "name": "transaction_binding",
+        "matched": true
+      },
+      {
+        "name": "merchant_binding",
+        "matched": true
+      },
+      {
+        "name": "network_binding",
+        "matched": true
+      },
+      {
+        "name": "asset_binding",
+        "matched": true
+      },
+      {
+        "name": "amount_binding",
+        "matched": true
+      },
+      {
+        "name": "recipient_present_in_contract",
+        "matched": true
+      }
+    ],
+    "recipientComparisonPerformed": false,
+    "scope": "historical_source_record_consistency"
+  },
+  "recordedFinality": {
+    "facilitatorRecordSaysFinalized": true,
+    "independentlyVerified": false
+  },
+  "negativeAcceptance": {
+    "test": "altered_expected_commercial_amount",
+    "result": "mismatch_detected",
+    "source": "in_memory_test_only"
+  },
+  "assurance": {
+    "receiptSignatureAuthenticated": false,
+    "settlementIndependentlyVerified": false,
+    "agentAuthorityVerified": false,
+    "sellerBindingVerified": false,
+    "deliveryAuthenticated": false,
+    "transactionWideVerified": false
+  },
+  "limitations": [
+    "Historical Gateway configuration does not establish runtime deployment.",
+    "Receipt signing-key authorization has not been established.",
+    "Receipt signature verification has not been performed.",
+    "Independent trusted-node settlement observation has not been performed.",
+    "Recipient equality has not been established by this comparison.",
+    "Agent authority, seller binding and delivery authenticity remain unverified.",
+    "Source correlation does not establish transaction-wide assurance.",
+    "This record is not a validated PP-01 Evidence Manifest."
+  ]
+}
